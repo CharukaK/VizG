@@ -49,7 +49,9 @@ import {
     VictoryTooltip,
     VictoryContainer,
     VictoryVoronoiContainer,
-    VictoryLegend
+    VictoryLegend,
+    VictoryPie,
+    VictoryLabel
 } from 'victory';
 import React from 'react';
 import * as d3 from 'd3';
@@ -72,7 +74,10 @@ export default class VizG extends React.Component {
             height: props.height || props.config.height || 450,
             multiDimensional: false,
             nOfCategories: 1,
-            scatterPlotRange:[]
+            scatterPlotRange:[],
+            legend:true,
+            chartType:'general',
+            randomUpdater:0
         };
 
         this._sortAndPopulateDataSet = this._sortAndPopulateDataSet.bind(this);
@@ -81,15 +86,24 @@ export default class VizG extends React.Component {
 
 
     componentDidMount() {
+        console.info('cdm');
         this._sortAndPopulateDataSet(this.props);
     }
 
     
     componentWillReceiveProps(nextProps) {
+        
         this._sortAndPopulateDataSet(nextProps);
     }
 
-
+    /**
+     * generates a data set for the given value
+     * @param value for data set should be generated
+     * @private
+     */
+    _getPercentDataForPieChart(value){
+        return [{x:'primary',y:value},{x:'secondary',y:100-value}]
+    }
     /**
      * Gives a range of colors that can be used in the scatter plot color range
      * @param scheme color scheme given as a string
@@ -107,77 +121,81 @@ export default class VizG extends React.Component {
      */
     _sortAndPopulateDataSet(props) {
         let {metadata, config, data} = props;
-        let {dataSets, initialized, orientation, chartArray, xScale, multiDimensional,scatterPlotRange,nOfCategories} = this.state;
+        let {dataSets, initialized, orientation, randomUpdater, chartArray, legend, xScale, multiDimensional,scatterPlotRange,nOfCategories,chartType} = this.state;
 
         if (config.charts.length > 1) {
             multiDimensional = true;
         }
         //if x is defined it's either line,bar or area or geo chart
         if (config.x) {
-            let xIndex = metadata.names.indexOf(config.x);
-            xScale = metadata.types[xIndex] === 'time' ? 'time' : xScale;
+            if(config.charts[0].type!=='map'){
+                let xIndex = metadata.names.indexOf(config.x);
+                xScale = metadata.types[xIndex] === 'time' ? 'time' : xScale;
 
-            config.charts.map((chart, chartIndex) => {
+                config.charts.map((chart, chartIndex) => {
 
-                orientation = orientation === 'left' ? orientation : (chart.orientation || 'bottom');
+                    orientation = orientation === 'left' ? orientation : (chart.orientation || 'bottom');
 
-                let yIndex = metadata.names.indexOf(chart.y);
-                if (!initialized) {
-                    chartArray.push({
-                        type: chart.type,
-                        dataSetNames: {},
-                        mode: chart.mode,
-                        orientation: chart.orientation,
-                        colorScale: Array.isArray(chart.colorScale) ? chart.colorScale : this._getColorRangeArray(chart.colorScale || 'category10'),
-                        colorIndex: 0,
+                    let yIndex = metadata.names.indexOf(chart.y);
+                    if (!initialized) {
+                        chartArray.push({
+                            type: chart.type,
+                            dataSetNames: {},
+                            mode: chart.mode,
+                            orientation: chart.orientation,
+                            colorScale: Array.isArray(chart.colorScale) ? chart.colorScale : this._getColorRangeArray(chart.colorScale || 'category10'),
+                            colorIndex: 0,
 
+                        });
+
+
+                    }
+
+
+                    data.map((datum) => {
+                        let dataSetName = metadata.names[yIndex];
+                        if (chart.color) {
+                            let colorIndex = metadata.names.indexOf(chart.color);
+                            dataSetName = colorIndex > -1 ? datum[colorIndex] : dataSetName;
+                        }
+
+                        dataSets[dataSetName] = dataSets[dataSetName] || [];
+                        // console.info(yIndex);
+                        dataSets[dataSetName].push({x: datum[xIndex], y: datum[yIndex]});
+
+                        // console.info(chart.maxLength);
+                        if (dataSets[dataSetName].length > config.maxLength) {
+                            // console.info('check');
+                            dataSets[dataSetName].shift();
+                        }
+
+                        // console.info(chartArray[chartIndex].dataSetNames);
+                        if (!chartArray[chartIndex].dataSetNames.hasOwnProperty(dataSetName)) {
+                            if (chartArray[chartIndex].colorIndex >= chartArray[chartIndex].colorScale.length) {
+                                chartArray[chartIndex].colorIndex = 0;
+                            }
+
+                            if (chart.colorDomain) {
+                                let colorIn = chart.colorDomain.indexOf(dataSetName);
+                                chartArray[chartIndex].dataSetNames[dataSetName] = colorIn >= 0 ? (colorIn < chartArray[chartIndex].colorScale.length ? chartArray[chartIndex].colorScale[colorIn] : chartArray[chartIndex].colorScale[chartArray[chartIndex].colorIndex++] ) : chartArray[chartIndex].colorScale[chartArray[chartIndex].colorIndex++];
+                            } else {
+                                chartArray[chartIndex].dataSetNames[dataSetName] = chartArray[chartIndex].colorScale[chartArray[chartIndex].colorIndex++];
+                            }
+
+                            chartArray[chartIndex].dataSetNames[dataSetName]=chart.fill || chartArray[chartIndex].dataSetNames[dataSetName];
+
+
+                        }
+                        // console.info(chartArray[chartIndex].dataSetNames);
+                        nOfCategories=Object.keys(chartArray[chartIndex].dataSetNames).length > nOfCategories ?  Object.keys(chartArray[chartIndex].dataSetNames).length : nOfCategories;
+                        // console.info(nOfCategories);
                     });
+                    // console.info('awa');
 
-
-                }
-
-
-                data.map((datum, datIndex) => {
-                    let dataSetName = metadata.names[yIndex];
-                    if (chart.color) {
-                        let colorIndex = metadata.names.indexOf(chart.color);
-                        dataSetName = colorIndex > -1 ? datum[colorIndex] : dataSetName;
-                    }
-
-                    dataSets[dataSetName] = dataSets[dataSetName] || [];
-                    // console.info(yIndex);
-                    dataSets[dataSetName].push({x: datum[xIndex], y: datum[yIndex]});
-
-                    // console.info(chart.maxLength);
-                    if (dataSets[dataSetName].length > config.maxLength) {
-                        // console.info('check');
-                        dataSets[dataSetName].shift();
-                    }
-
-                    // console.info(chartArray[chartIndex].dataSetNames);
-                    if (!chartArray[chartIndex].dataSetNames.hasOwnProperty(dataSetName)) {
-                        if (chartArray[chartIndex].colorIndex >= chartArray[chartIndex].colorScale.length) {
-                            chartArray[chartIndex].colorIndex = 0;
-                        }
-
-                        if (chart.colorDomain) {
-                            let colorIn = chart.colorDomain.indexOf(dataSetName);
-                            chartArray[chartIndex].dataSetNames[dataSetName] = colorIn >= 0 ? (colorIn < chartArray[chartIndex].colorScale.length ? chartArray[chartIndex].colorScale[colorIn] : chartArray[chartIndex].colorScale[chartArray[chartIndex].colorIndex++] ) : chartArray[chartIndex].colorScale[chartArray[chartIndex].colorIndex++];
-                        } else {
-                            chartArray[chartIndex].dataSetNames[dataSetName] = chartArray[chartIndex].colorScale[chartArray[chartIndex].colorIndex++];
-                        }
-
-                        chartArray[chartIndex].dataSetNames[dataSetName]=chart.fill || chartArray[chartIndex].dataSetNames[dataSetName];
-
-
-                    }
-                    // console.info(chartArray[chartIndex].dataSetNames);
-                    nOfCategories=Object.keys(chartArray[chartIndex].dataSetNames).length > nOfCategories ?  Object.keys(chartArray[chartIndex].dataSetNames).length : nOfCategories; 
-                    // console.info(nOfCategories);
                 });
-                // console.info('awa');
-
-            });
+            }else {
+                //ToDO: map component
+            }
         } else if(config.type==='scatter'){
             config.charts.map((chart,chartIndex)=>{
                 let xIndex = metadata.names.indexOf(chart.x);
@@ -197,6 +215,7 @@ export default class VizG extends React.Component {
 
 
                 if(metadata.types[colorIndex]==='linear'){
+                    legend=false;
                     data.map((datum)=>{
 
                         dataSets['scatterChart'+chartIndex]=dataSets['scatterChart'+chartIndex] || [];
@@ -207,7 +226,7 @@ export default class VizG extends React.Component {
                             dataSets['scatterChart'+chartIndex].shift();
                         }
 
-                        console.info(datum[sizeIndex]);
+                        // console.info(datum[sizeIndex]);
                         
                         if(scatterPlotRange.length===0){
                             scatterPlotRange=[datum[colorIndex],datum[colorIndex]];
@@ -220,7 +239,7 @@ export default class VizG extends React.Component {
                         chartArray[chartIndex].dataSetNames['scatterChart'+chartIndex] = chartArray[chartIndex].dataSetNames['scatterChart'+chartIndex] || null;      
                     });
                 } else {
-                    data.map((datum, datIndex) => {
+                    data.map((datum) => {
                         let dataSetName = 'scatterChart'+chartIndex;
                         if (chart.color) {
                             let colorIndex = metadata.names.indexOf(chart.color);
@@ -258,6 +277,73 @@ export default class VizG extends React.Component {
                     });
                 }
             });
+        } else {
+            if(config.charts[0].type==='arc'){
+                chartType='arc';
+                let arcConfig=config.charts[0];
+                let xIndex=metadata.names.indexOf(arcConfig.x);
+                let colorIndex=metadata.names.indexOf(arcConfig.color);
+                if(!config.percentage){
+                    
+                    if (!initialized) {
+                        chartArray.push({
+                            type: arcConfig.type,
+                            dataSetNames: {},
+                            mode: arcConfig.mode,
+                            colorScale: Array.isArray(arcConfig.colorScale) ? arcConfig.colorScale : this._getColorRangeArray(arcConfig.colorScale || 'category10'),
+                            colorIndex: 0,
+    
+                        });                        
+                    }
+
+                    data.map((datum)=>{
+                        randomUpdater++;
+                        let dataSetName=datum[colorIndex];
+
+                        if(dataSets[dataSetName]){
+                            dataSets[dataSetName].y+=datum[xIndex];
+                            
+                        }else {
+                            chartArray[0].colorIndex= chartArray[0].colorIndex>=chartArray[0].colorScale.length ? 0 : chartArray[0].colorIndex;
+                            if(arcConfig.colorDomain){
+                                let colorDomIndex=arcConfig.colorDomain.indexOf(dataSetName);
+
+                                if(colorDomIndex>-1 && colorDomIndex<chartArray[0].colorScale.length ){
+                                    dataSets[dataSetName]={x:dataSetName,y:datum[xIndex],fill:chartArray[0].colorScale[colorDomIndex]};
+                                    chartArray[0].dataSetNames[dataSetName]=chartArray[0].colorIndex++;
+                                }else {
+                                    dataSets[dataSetName]={x:dataSetName,y:datum[xIndex],fill:chartArray[0].colorScale[chartArray[0].colorIndex]};
+                                }
+
+                            }else {
+                                dataSets[dataSetName]={x:dataSetName,y:datum[xIndex],fill:chartArray[0].colorScale[chartArray[0].colorIndex]};
+                            }
+
+                            if(!chartArray[0].dataSetNames[dataSetName]){
+                                chartArray[0].dataSetNames[dataSetName]=chartArray[0].colorScale[chartArray[0].colorIndex++];
+                            }
+
+                        } 
+                    });
+                } else {
+                    chartType='percentage';
+                    legend=false;
+                    if (!initialized) {
+                        chartArray.push({
+                            type: arcConfig.type,
+                            colorScale: Array.isArray(arcConfig.colorScale) ? arcConfig.colorScale : this._getColorRangeArray(arcConfig.colorScale || 'category10'),
+                        });
+
+                    }
+
+                    data.map((datum)=>{
+                        dataSets=this._getPercentDataForPieChart(datum[xIndex]);
+                    });
+                }             
+            } else{
+                //TODO: Table data set
+                chartType='table';
+            }
         }
 
 
@@ -272,7 +358,10 @@ export default class VizG extends React.Component {
             initialized: initialized,
             multiDimensional: multiDimensional,
             scatterPlotRange:scatterPlotRange,
-            nOfCategories:nOfCategories
+            nOfCategories:nOfCategories,
+            legend:legend,
+            chartType:chartType,
+            randomUpdater:randomUpdater
         });
 
 
@@ -334,14 +423,14 @@ export default class VizG extends React.Component {
     
     render() {
         let {metadata, config} = this.props;
-        let {chartArray, dataSets, orientation, xScale, multiDimensional, nOfCategories, width, height} = this.state;
+        let {chartArray, dataSets, orientation, randomUpdater, xScale, multiDimensional, width, height,legend,chartType} = this.state;
         let chartComponents = [];
         let legendItems = [];
         let horizontal=false;
         let lineCharts = [];
         let areaCharts = [];
         let barcharts = [];
-
+        console.info('hj');
         chartArray.map((chart, chartIndex) => {
             
 
@@ -419,7 +508,7 @@ export default class VizG extends React.Component {
                     let localBar = [];
 
                     horizontal=horizontal ? horizontal : chart.orientation==='left';
-                    let barNumber=0;
+                    
                     Object.keys(chart.dataSetNames).map((dataSetName) => {
                         legendItems.push({ name: dataSetName, symbol: { fill: chart.dataSetNames[dataSetName] } });
                         localBar.push(
@@ -435,7 +524,7 @@ export default class VizG extends React.Component {
                                 
                             />
                         );
-                        barNumber++;
+                        
                     });
 
                     if (chart.mode === 'stacked') {
@@ -499,7 +588,49 @@ export default class VizG extends React.Component {
                     }
 
                     break;
+                
+                case 'arc':{
 
+                    let pieChartData=[];
+                    let total=0;
+                    if(chartType!=='percentage'){
+                        Object.keys(chart.dataSetNames).map((dataSetName)=>{
+                            // console.info(chart.dataSetNames[dataSetName]);
+                            legendItems.push({ name: dataSetName, symbol: { fill: chart.dataSetNames[dataSetName] } });
+                            total+=dataSets[dataSetName].y;
+                            pieChartData.push(dataSets[dataSetName]);
+                        });
+                    }
+
+                    chartComponents.push(
+                        <svg width='100%' height={'100%'} viewBox={`0 0 ${height} ${width}`}>
+                            <VictoryPie
+                                height={height}
+                                width={width}
+                                colorScale={chart.colorScale}
+                                data={chartType==='percentage'? dataSets : pieChartData}
+                                labelComponent={<VictoryTooltip width={50} height={25} />}
+                                labels={chartType==='percentage'? '' : (d)=>`${d.x} : ${(d.y/total)*100}%`}
+                                style={{labels:{fontSize:9}}}
+                                labelRadius={10}
+                                innerRadius={chart.mode==='donut' || chartType==='percentage' ? height/2.5 : 0}
+                                randomUpdater={randomUpdater}
+                            />
+                            {
+                                chartType==='percentage'?
+                                    <VictoryLabel
+                                        textAnchor="middle" verticalAnchor="middle"
+                                        x={height/2} y={width/2}
+                                        text={`${Math.round(dataSets[0].y)}%`}
+                                        style={{ fontSize: 45 }}
+                                    />:null
+                            }
+                        </svg>
+                    );
+                    // console.info(pieChartData);
+                    // console.info(chartComponents);
+                    break;
+                }
 
 
             }
@@ -515,7 +646,7 @@ export default class VizG extends React.Component {
         if (lineCharts.length > 0) chartComponents = chartComponents.concat(lineCharts);
         if (barcharts.length > 0) {
             // console.info('bar length',barcharts.length);
-            let barWidth = (horizontal ? height : width) / (config.maxLength * barcharts.length);
+            let barWidth = (horizontal ? width : height) / (config.maxLength * barcharts.length);
             // if(!horizontal) console.info(barWidth);
             // if(multiDimensional) console.info(barcharts);
             chartComponents.push(
@@ -532,27 +663,36 @@ export default class VizG extends React.Component {
 
         return (
             <div style={{overflow: 'hidden'}}>
-                <div style={{float: 'left', width: '80%', display:'inline'}}>
-                    <VictoryChart
-                        width={800}
-                        height={400}
-                        theme={VictoryTheme.material}
-                        container={<VictoryVoronoiContainer/>}
-                    >
-                        {chartComponents}
+                <div style={{float: 'left', width: legend ? '80%':'100%', display:'inline'}}>
+                    {
+                        chartType==='general' ?
+                            <VictoryChart
+                                width={800}
+                                height={400}
+                                theme={VictoryTheme.material}
+                                container={<VictoryVoronoiContainer/>}
+                            >
+                                {chartComponents}
 
-                    </VictoryChart>
+                            </VictoryChart>:
+                            chartComponents
+
+                    }
                 </div>
-                <div style={{width: '20%', display:'inline',float:'right'}}>
-                    <VictoryLegend
-                        containerComponent={<VictoryContainer responsive={true}/>}
-                        height={this.state.height}
-                        width={300}
-                        title="Legend"
-                        style={{title: {fontSize: 25 },labels:{fontSize:20}}}
-                        data={legendItems.length>0 ? legendItems : [{name:'undefined', symbol:{fill:'#333'}}]}
-                    />
-                </div>
+                {
+                    legend ?
+                    <div style={{width: '20%', display:'inline',float:'right'}}>
+                        <VictoryLegend
+                            containerComponent={<VictoryContainer responsive={true}/>}
+                            height={this.state.height}
+                            width={300}
+                            title="Legend"
+                            style={{title: {fontSize: 25 },labels:{fontSize:20}}}
+                            data={legendItems.length>0 ? legendItems : [{name:'undefined', symbol:{fill:'#333'}}]}
+                        />
+                    </div>:
+                    null
+                }
             </div>
 
 
