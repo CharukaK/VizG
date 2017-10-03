@@ -10,13 +10,13 @@ import Test from './Samples/Test.js';
 
 import {
     BrowserRouter as Router,
-    Route
+    Route,Switch
 } from 'react-router-dom';
 
 
 ReactDOM.render(
 <Router>
-    <div>
+    <Switch>
         <Route exact path="/" component={App}/>
         <Route exact path="/test" component={Test}/>
         <Route exact path="/line-charts" component={LineChart}/>
@@ -24,5 +24,5 @@ ReactDOM.render(
         <Route exact path="/area-charts/" component={AreaChart}/>
         <Route exact path='/scatter-charts' component={ScatterPlot}/>
         <Route exact path='/pie-charts' component={PieChart}/>
-    </div>
+    </Switch>
 </Router>,document.getElementById('root'));
