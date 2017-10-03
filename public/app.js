@@ -6781,12 +6781,12 @@ var VizG = function (_React$Component) {
                                     width: width,
                                     colorScale: chart.colorScale,
                                     data: chartType === 'percentage' ? dataSets : pieChartData,
-                                    labelComponent: _react2.default.createElement(_victory.VictoryTooltip, { width: 50, height: 25 }),
+                                    labelComponent: chartType === 'percentage' ? _react2.default.createElement(_victory.VictoryLabel, { text: '' }) : _react2.default.createElement(_victory.VictoryTooltip, { width: 50, height: 25 }),
                                     labels: chartType === 'percentage' ? '' : function (d) {
-                                        return d.x + ' : ' + d.y / total * 100 + '%';
+                                        return d.x + ' : ' + (d.y / total * 100).toFixed(2) + '%';
                                     },
-                                    style: { labels: { fontSize: 9 } },
-                                    labelRadius: 10,
+                                    style: { labels: { fontSize: 6 } },
+                                    labelRadius: 40,
                                     innerRadius: chart.mode === 'donut' || chartType === 'percentage' ? height / 2.5 : 0,
                                     randomUpdater: randomUpdater
                                 }),
@@ -7205,7 +7205,8 @@ var Row = exports.Row = function (_React$Component) {
                             _Card.CardActions,
                             null,
                             _react2.default.createElement(_FlatButton2.default, { label: this.state.actionBar ? 'View Usage' : ' ', onClick: function onClick() {
-                                    window.location.href = _this2.state.chart + '-charts';
+                                    window.location.href = '#' + _this2.state.chart + '-charts';
+                                    // window.location.href=this.state.chart+'-charts';
                                 } })
                         )
                     )
@@ -38337,16 +38338,16 @@ var _reactRouterDom = __webpack_require__(1263);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _reactDom2.default.render(_react2.default.createElement(
-    _reactRouterDom.BrowserRouter,
+    _reactRouterDom.HashRouter,
     null,
     _react2.default.createElement(
-        'div',
+        _reactRouterDom.Switch,
         null,
         _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/', component: _App2.default }),
         _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/test', component: _Test2.default }),
         _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/line-charts', component: _LineChartsSamples2.default }),
         _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/bar-charts', component: _BarChartConfigSample2.default }),
-        _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/area-charts/', component: _AreaChartConfig2.default }),
+        _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/area-charts', component: _AreaChartConfig2.default }),
         _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/scatter-charts', component: _ScatterPlotConfigSample2.default }),
         _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/pie-charts', component: _PieChartsConfigSample2.default })
     )
@@ -50128,6 +50129,7 @@ var App = function (_React$Component) {
             names: ['rpm', 'torque', 'horsepower', 'EngineType', 'weight'],
             types: ['linear', 'linear', 'linear', 'ordinal', 'linear']
         };
+        _this.interval_id = null;
         _this.lineChartConfig = {
             x: 'rpm',
             charts: [{ type: 'line', y: 'torque', color: 'EngineType', colorDomain: ['', '', 'piston'] }],
@@ -50189,6 +50191,9 @@ var App = function (_React$Component) {
         return _this;
     }
 
+    //interval id
+
+
     /*****************[START] Chart Config******************/
 
 
@@ -50218,7 +50223,7 @@ var App = function (_React$Component) {
             //     console.info('haha');
             // }, 60000 * 15);
 
-            setInterval(function () {
+            this.interval_id = setInterval(function () {
                 // Perf.start();
                 var randomY = (_this2.state.timer + 7) * 5;
                 _this2.setState({
@@ -50229,7 +50234,11 @@ var App = function (_React$Component) {
                 });
             }, 500);
         }
-
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            clearInterval(this.interval_id);
+        }
         //<ChartWrapper config={this.areaChartConfig} metadata={this.metadata} data={this.state.data}/>
 
     }, {
@@ -89016,6 +89025,7 @@ var LineChartConfigSample = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (LineChartConfigSample.__proto__ || Object.getPrototypeOf(LineChartConfigSample)).call(this, props));
 
+        _this.interval_id = null;
         _this.metadata = {
             names: ['rpm', 'torque', 'horsepower', 'EngineType', 'weight'],
             types: ['linear', 'linear', 'linear', 'ordinal', 'linear']
@@ -89057,13 +89067,18 @@ var LineChartConfigSample = function (_React$Component) {
         value: function componentDidMount() {
             var _this2 = this;
 
-            setInterval(function () {
+            this.interval_id = setInterval(function () {
                 _this2.setState({
                     data: [[_this2.state.timer, _this2.state.timer === 20 ? null : Math.random() * 100, 10, 'piston'], [_this2.state.timer, Math.random() * 100, 10, 'rotary']],
                     data2: [[_this2.state.timer, Math.random() * 100, Math.random() * 100, 'rotary']],
                     timer: _this2.state.timer + 1
                 });
             }, 2000);
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            clearInterval(this.interval_id);
         }
     }, {
         key: 'render',
@@ -90010,6 +90025,7 @@ var BarChartConfigSample = function (_React$Component) {
             names: ['rpm', 'torque', 'horsepower', 'EngineType'],
             types: ['linear', 'linear', 'linear', 'ordinal']
         };
+        _this.interval_id = null;
         _this.barChartConfig = {
             x: 'rpm',
             charts: [{ type: 'bar', y: 'torque', color: 'EngineType', colorDomain: ['', '', 'piston'] }],
@@ -90063,13 +90079,18 @@ var BarChartConfigSample = function (_React$Component) {
         value: function componentDidMount() {
             var _this2 = this;
 
-            setInterval(function () {
+            this.interval_id = setInterval(function () {
                 _this2.setState({
                     data: [[_this2.state.timer, _this2.state.timer === 20 ? null : Math.random() * 100, 10, 'piston'], [_this2.state.timer, Math.random() * 100, 10, 'rotary']],
                     data2: [[_this2.state.timer, Math.random() * 100, Math.random() * 100, 'rotary']],
                     timer: _this2.state.timer + 1
                 });
             }, 2000);
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            clearInterval(this.interval_id);
         }
     }, {
         key: 'render',
@@ -90528,6 +90549,7 @@ var AreaChartConfigSample = function (_React$Component) {
             names: ['rpm', 'torque', 'horsepower', 'EngineType'],
             types: ['linear', 'linear', 'linear', 'ordinal']
         };
+        _this.interval_id = null;
         _this.areaChartConfig = {
             x: 'rpm',
             charts: [{ type: 'area', y: 'torque', color: 'EngineType', colorDomain: ['', '', 'piston'] }],
@@ -90561,6 +90583,9 @@ var AreaChartConfigSample = function (_React$Component) {
         return _this;
     }
 
+    //interval id
+
+
     /*****************[START] Chart Config******************/
 
 
@@ -90573,13 +90598,18 @@ var AreaChartConfigSample = function (_React$Component) {
         value: function componentDidMount() {
             var _this2 = this;
 
-            setInterval(function () {
+            this.interval_id = setInterval(function () {
                 _this2.setState({
                     data: [[_this2.state.timer, _this2.state.timer === 20 ? null : Math.random() * 100, 10, 'piston'], [_this2.state.timer, Math.random() * 100, 10, 'rotary']],
                     data2: [[_this2.state.timer, Math.random() * 100, Math.random() * 100, 'rotary']],
                     timer: _this2.state.timer + 1
                 });
             }, 2000);
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            clearInterval(this.interval_id);
         }
     }, {
         key: 'render',
@@ -90995,6 +91025,7 @@ var ScatterChartConfigSample = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (ScatterChartConfigSample.__proto__ || Object.getPrototypeOf(ScatterChartConfigSample)).call(this, props));
 
+        _this.interval_id = null;
         _this.metadata = {
             names: ['rpm', 'torque', 'horsepower', 'weight', 'EngineType'],
             types: ['linear', 'linear', 'linear', 'linear', 'ordinal']
@@ -91035,12 +91066,17 @@ var ScatterChartConfigSample = function (_React$Component) {
         value: function componentDidMount() {
             var _this2 = this;
 
-            setInterval(function () {
+            this.interval_id = setInterval(function () {
                 _this2.setState({
                     scatterPlot: [[_this2.state.timer, Math.random() * 100, Math.random() * 10, Math.random() * 100, 'piston'], [_this2.state.timer, Math.random() * 100, Math.random() * 10, Math.random() * 100, 'rotary']],
                     timer: _this2.state.timer + 1
                 });
             }, 2000);
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            clearInterval(this.interval_id);
         }
     }, {
         key: 'render',
@@ -91392,6 +91428,7 @@ var LineChartConfigSample = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (LineChartConfigSample.__proto__ || Object.getPrototypeOf(LineChartConfigSample)).call(this, props));
 
+        _this.interval_jd = null;
         _this.metadata = {
             names: ['rpm', 'torque', 'horsepower', 'EngineType', 'weight'],
             types: ['linear', 'linear', 'linear', 'ordinal', 'linear']
@@ -91435,13 +91472,18 @@ var LineChartConfigSample = function (_React$Component) {
         value: function componentDidMount() {
             var _this2 = this;
 
-            setInterval(function () {
+            this.interval_jd = setInterval(function () {
                 _this2.setState({
                     data: [[_this2.state.timer, _this2.state.timer === 20 ? null : Math.random() * 100, 10, 'piston'], [_this2.state.timer, Math.random() * 100, 10, 'rotary'], [_this2.state.timer, _this2.state.timer === 20 ? null : Math.random() * 100, 10, 'piston2'], [_this2.state.timer, Math.random() * 100, 10, 'rotary2']],
                     data2: [[_this2.state.timer, Math.random() * 100, Math.random() * 100, 'rotary']],
                     timer: _this2.state.timer + 1
                 });
             }, 2000);
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            clearInterval(this.interval_id);
         }
     }, {
         key: 'render',
