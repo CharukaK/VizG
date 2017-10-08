@@ -183,7 +183,7 @@ export default class App extends React.Component {
             <div>
                 <div className={'jumbotron'}>
                     <center><h1>VizG</h1></center>
-                    <center><p>Charting Config Samples</p></center>
+                    <center><p>Data Visualization Grammar for React</p></center>
                 </div>
 
                 <Row media={true} chart={'line'} title={'Line Charts'} actionBar={true}>
