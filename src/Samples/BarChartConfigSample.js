@@ -88,7 +88,7 @@ export default class BarChartConfigSample extends React.Component {
         return (
             <div>
                 <center><h1>Bar Chart Config Samples</h1></center>
-                <Row title="Group MultiLine Chart Sample" chart="line" media={true} actionBar={false}>
+                <Row title="Bar Chart Sample" chart="line" media={true} actionBar={false}>
                     <VizG config={this.barChartConfig} metadata={this.metadata} data={this.state.data}/>
                     <br/>
                     <div>
@@ -108,7 +108,7 @@ export default class BarChartConfigSample extends React.Component {
                        </pre>
                     </div>
                 </Row>
-                <Row title="Multi Line Chart Sample" chart="line" media={true} actionBar={false}>
+                <Row title="Multi Bar Chart Sample" chart="line" media={true} actionBar={false}>
                     <VizG config={this.singleBarChartConfig} metadata={this.metadata} data={this.state.data2}/>
                     <br/>
                     <div>
@@ -126,7 +126,7 @@ export default class BarChartConfigSample extends React.Component {
                        </pre>
                     </div>
                 </Row>
-                <Row title="Group MultiLine Chart Sample Horizontal" chart="line" media={true} actionBar={false}>
+                <Row title="Horizontal Chart Sample Horizontal" chart="line" media={true} actionBar={false}>
                     <VizG config={this.barHorizontalChartConfig} metadata={this.metadata} data={this.state.data}/>
                     <br/>
                     <div>
@@ -147,7 +147,7 @@ export default class BarChartConfigSample extends React.Component {
                     </div>
                 </Row>
 
-                <Row title="Group MultiLine Chart Sample stacked" chart="line" media={true} actionBar={false}>
+                <Row title="Stacked Chart Sample stacked" chart="line" media={true} actionBar={false}>
                     <VizG config={this.stackedBarChartConfig} metadata={this.metadata} data={this.state.data}/>
                     <br/>
                     <div>

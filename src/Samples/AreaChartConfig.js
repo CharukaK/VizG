@@ -83,7 +83,7 @@ export default class AreaChartConfigSample extends React.Component {
         return (
             <div>
                 <center><h1>Area Chart Config Samples</h1></center>
-                <Row title="Group Area Chart Sample" chart="line" media={true} actionBar={false}>
+                <Row title="Area Chart Sample" chart="line" media={true} actionBar={false}>
                     <VizG config={this.areaChartConfig} metadata={this.metadata} data={this.state.data}/>
                     <br/>
                     <div>
@@ -123,7 +123,7 @@ export default class AreaChartConfigSample extends React.Component {
                 </Row>
 
 
-                <Row title="Group Area Chart Sample stacked" chart="line" media={true} actionBar={false}>
+                <Row title="Area Chart Sample stacked" chart="line" media={true} actionBar={false}>
                     <VizG config={this.stackedAreaChartConfig} metadata={this.metadata} data={this.state.data}/>
                     <br/>
                     <div>

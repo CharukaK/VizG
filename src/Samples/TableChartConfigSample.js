@@ -19,14 +19,19 @@ class TableChartConfigSample extends Component {
         };
     }
 
+    intervalId=null;
 
     componentDidMount() {
-        setInterval(()=>{
+        this.intervalId=setInterval(()=>{
             this.setState({
                 data : [[Math.round(Math.random()*100), Math.round(Math.random()*100), 1, 'Piston'],[Math.round(Math.random()*100), Math.round(Math.random()*100), 1, 'rotary']]   ,
                 timer: this.state.timer+1
             });
         },1000);
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.intervalId)
     }
 
     mapConfig = {

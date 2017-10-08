@@ -17,13 +17,17 @@ class NumberChartConfigSample extends Component {
         };
     }
 
-
+    intervalId;
     componentDidMount() {
-        setInterval(()=>{
+        this.intervalId=setInterval(()=>{
             this.setState({
                 data : this.state.data.concat([[0, Math.round(Math.random()*100), 1, 'Piston'],[0, Math.round(Math.random()*100), 1, 'rotary']])
             });
         },1000);
+    }
+
+    componentWillUnmount(){
+        clearInterval(this.intervalId);
     }
 
     numConfig = {

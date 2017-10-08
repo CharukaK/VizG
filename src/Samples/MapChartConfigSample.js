@@ -37,8 +37,8 @@ class Test extends Component {
     }
 
 
-    componentDidMount() {
-
+    componentWillUnmount() {
+        this.setState({});
     }
 
     mapConfig = {

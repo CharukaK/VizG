@@ -112,7 +112,7 @@ export default class LineChartConfigSample extends React.Component {
                     </div>
                 </Row>
 
-                <Row title="Donut Chart Sample" chart="line" media={true} actionBar={false}>
+                <Row title="Gauge Sample" chart="line" media={true} actionBar={false}>
                     <VizG config={this.configT} metadata={this.metadata} data={this.state.data}/>
                     <br/><br/>
                     <div style={{display: 'block'}}>
