@@ -12,11 +12,15 @@ import {
     HashRouter as Router,
     Route,Switch
 } from 'react-router-dom';
+import MapChartConfigSample from "./Samples/MapChartConfigSample";
+import NumberChartConfigSample from "./Samples/NumberChartConfigSample";
+import TableCharts from "./Samples/TableChartConfigSample";
+
 
 
 ReactDOM.render(
 <Router>
-    <Switch>
+    <div>
         <Route exact path="/" component={App}/>
         <Route exact path="/test" component={Test}/>
         <Route exact path="/line-charts" component={LineChart}/>
@@ -24,5 +28,11 @@ ReactDOM.render(
         <Route exact path="/area-charts" component={AreaChart}/>
         <Route exact path='/scatter-charts' component={ScatterPlot}/>
         <Route exact path='/pie-charts' component={PieChart}/>
-    </Switch>
+
+
+        <Route exact path='/map-charts' component={MapChartConfigSample}/>
+        <Route exact path='/number-charts' component={NumberChartConfigSample}/>
+        <Route exact path='/table-charts' component={TableCharts}/>
+    </div>
+
 </Router>,document.getElementById('root'));

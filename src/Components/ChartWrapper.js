@@ -19,15 +19,12 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import BasicCharts from './ChartComponents/BasicCharts';
-import ScatterCharts from './ChartComponents/ScatterCharts';
-import PieCharts from './ChartComponents/PieCharts';
-import MapGenerator from './ChartComponents/MapGenerator';
-import TableCharts from './ChartComponents/TableCharts';
-import NumberCharts from "./ChartComponents/NumberCharts";
+import BasicCharts from "./ChartComponents/BasicCharts";
+import ScatterCharts from "./ChartComponents/ScatterCharts";
+import PieCharts from "./ChartComponents/PieCharts";
 
 
-class VizG extends Component {
+class ChartWrapper extends Component {
 
     constructor(props) {
         super(props);
@@ -63,19 +60,17 @@ class VizG extends Component {
                         <BasicCharts config={config} metadata={metadata} data={data}/> :
                         chartType === 'scatter' ? <ScatterCharts config={config} metadata={metadata} data={data}/> :
                             chartType === 'arc' ? <PieCharts config={config} metadata={metadata} data={data}/>:
-                                chartType === 'map' ? <MapGenerator config={config} metadata={metadata} data={data}/> :
-                                    chartType === 'table' ? <TableCharts metadata={metadata} config={config} data={data}/> :
-                                        chartType==='number' ? <NumberCharts metadata={metadata} config={config} data={data}/>:null
+                                chartType === 'map' ? <div></div> : null
                 }
             </div>
         );
     }
 }
 
-VizG.propTypes = {
+ChartWrapper.propTypes = {
     config: PropTypes.object.isRequired,
     data: PropTypes.array,
     metadata: PropTypes.object.isRequired
 };
 
-export default VizG;
+export default ChartWrapper;
